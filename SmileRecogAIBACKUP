@@ -1,0 +1,149 @@
+#I noticed that my jupyter upload was having problems loading, here the code will be listed as a backup
+
+#imports
+
+import os, sys
+import cv2
+
+faceDetect = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+# used for number inputs
+def enterNumber(text, range):
+    while True:
+        numEntered = input("{}\u001b[32m".format(text))
+        print("\u001b[38m\u001b[0m", end = "\n")
+        try:
+            numEntered = int(numEntered)
+            if 0 < numEntered <= range:
+              #changes back to int as menu deals with choices only
+                return int(numEntered)
+            else:
+                print("That number is out of range, try again\n")
+        except ValueError:
+            print("That isn't a valid option, try again\n")
+# prints the options
+
+def optionsText(txt):
+    print("\u001b[36m{}\u001b[0m\n".format(txt))
+        
+# changes the AI in use
+def aiChanger():
+    print("Would you like to use my generated AI (lower quality) or a prebuilt AI?")
+    optionsText("\n1 - Generated AI \n2 - Prebuilt AI\n3 - Quit Program")
+    choice = enterNumber("\nEnter your choice here: ", 3)
+    if choice == 1:
+        return True
+    elif choice == 2:
+        return False
+    elif choice == 3:
+        return 3
+
+# chooses the method to obtain img data
+def imgFormatOptions():
+    print("Would you like to upload a photo, or use your webcam to run the program?")
+    optionsText("\n1 - Upload a photo \n2 - Use webcam")
+    choice = enterNumber("Enter your choice here: ", 2)
+    if choice == 1:
+        os.system("clear")
+        return True
+    elif choice == 2:
+        os.system("clear")
+        return False
+
+#ends the program
+def endIt():
+    print("\n\n\u001b[32mThis program will now close\nThank you for using my smile recognition system\n")
+    cv2.destroyAllWindows()
+    quit()
+    
+
+    
+    
+# main loop
+while True:
+    os.system("clear")
+    print("\nWelcome to my AI smile recognition program. You will be presented with several options throughout the use of this program.\nUse numbers to make your choices")
+    print("This program works best when doing readings from well lit/ bright areas\n\n")
+    AIChoice = aiChanger()
+    #ends the program
+    if AIChoice == 3:
+        endIt()
+        break
+    if AIChoice == True:
+        smileDetect = cv2.CascadeClassifier("myGraySmileHaarcascade.xml")
+        print("Works best in a bright environment with inputs facing forward, and tilted slightly down")
+    else:
+        smileDetect = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_smile.xml")
+    imgChoice = imgFormatOptions()
+    if imgChoice == True:
+        print("A blue sqaure will appear around any smiling faces.\nWhen entering the image path the image type MUST be included")
+        print("Click \u001b[31mESCAPE\u001b[0m to close the image")
+        try:
+            path = input("Enter the image path here (ex. myImage.jpg): ")
+            img = cv2.imread(path)
+            imgGray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        except:
+            print("\n\nThat is not a valid path, \ntry again\n")
+            continue
+        if AIChoice == True:
+            smiles = smileDetect.detectMultiScale(imgGray,1.02,4)
+        else:
+            smiles = smileDetect.detectMultiScale(imgGray,1.7,20)
+
+        for (x,y,w,h) in smiles:
+            img = cv2.rectangle(img,(x,y),(x+w,y+h),(200,50,0),2)
+
+        cv2.imshow('img',img)
+        while True:
+            key=cv2.waitKey(1)
+            if key%256 == 27:
+                print("\n\n\u001b[33mReturning to main menu...\u001b[0m\n")
+                cv2.destroyAllWindows()  
+                break
+    elif imgChoice == False:
+        #for webcam
+        print("To exit the webcam capture mode click ESC")
+        webcam = cv2.VideoCapture(0)
+        # means webcam is open (the X close button has not been clicked)
+        while True:
+            #updates the display
+            key=cv2.waitKey(1)
+            # 27 stands for escape key https://stackoverflow.com/questions/62072021/opencv-video-capture-using-keyboard-to-start-stop
+            if key%256 == 27:
+                print("\n\n\u001b[33mReturning to main menu...\u001b[0m\n")
+                webcam.release()
+                cv2.destroyAllWindows()  
+                break
+            # reads current frame (success is a bool to see if it finds anything)
+            successFrameRead, frame = webcam.read()
+            # breaks if theres an error reading
+            if not successFrameRead:
+                break
+            #grayscale-ify
+            frameGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # detect face (returns array of points) multiscale means detecting all despite size (rectangular array)
+            faces = faceDetect.detectMultiScale(frameGray)
+            # runs smile detection within the faces and places rectangle 
+            for (x,y,w,h) in faces:
+                # draws rectangle around face (x,y is top left, the + is bottom right and rectangle is made)
+                # the next numbrs r BGR (rgb colours) and the last num is the thickness (in pixels)
+                cv2.rectangle(frame, (x,y),(x+w,y+h),(100,200,50),4)
+
+                # sets the smile detector to only detect within faces
+                theFace= frame[y:y+h, x:x+w]
+                imgGray = cv2.cvtColor(theFace, cv2.COLOR_BGR2GRAY)
+
+                # detects smiles, settings to make criteria for a smile more specified (1.02 and 4/5 works well)
+                if AIChoice == True:
+                    smiles = smileDetect.detectMultiScale(imgGray,1.02,4)
+                else:
+                    smiles = smileDetect.detectMultiScale(imgGray,1.7,20)
+                # prints smile txt
+                if len(smiles) > 0:
+                    cv2.putText(frame, "Smile :)", (x, y+h+50), fontScale = 3, fontFace=cv2.FONT_HERSHEY_PLAIN, color=(50,50,200))
+            # shows frame
+            cv2.imshow('Smile Detector', frame)
+
+
+#this is just to make sure incase the program ends prematurely everything is closed
+cv2.destroyAllWindows()
