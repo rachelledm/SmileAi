@@ -13,4 +13,4 @@ All setting choices made throughout the program are by using number inputs, with
 
 To display the image(s), or to shoe the webcam, the program will open a tab. To close the tab, press ESCAPE
 
-ANy other information and citations can be found in my google document.
+Any other information and citations can be found in my google document.
