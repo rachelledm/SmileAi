@@ -10,6 +10,7 @@ If my custom generated AI is having a hard time reading a face, for webcam move 
 It works best with the head slightly tilted downwards. For images ensure the face is fully visible and preferably facing forward.
 
 All setting choices made throughout the program are by using number inputs, without spaces or any additional digits. 
+An image has been included to test the smile recognition program, feel free to use others. Link to image in google doc.
 
 To display the image(s), or to shoe the webcam, the program will open a tab. To close the tab, press ESCAPE
 
